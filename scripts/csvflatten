@@ -1,0 +1,42 @@
+#!/usr/bin/env node
+
+var fs = require('fs')
+
+var flat = require('flat')
+var parse = require('csv-parse')
+var writer = require('csv-stringify')
+var transform = require('stream-transform')
+
+var orig_file = process.argv[2]
+var opt = process.argv[3]
+
+var parser = parse({delimiter: ';', columns: true})
+var writer = writer({delimiter: ';', header: true})
+
+var input = orig_file ? fs.createReadStream(orig_file) : process.stdin
+
+
+var transformer = transform(function (record, callback) {
+
+  // Some type corrections. We just want to make sure that
+  // numerical, boolean data and nulls are translated into their correct types
+  for (var x in record) {
+    var rec = record[x]
+    if (/^\s*\d+\s*$/.test(rec) && rec[0] !== '0')
+      record[x] = parseInt(rec)
+    else if (/^\s*\d+[.,]\d+\s*$/.test(rec))
+      record[x] = parseFloat(rec.replace(',', '.'))
+    else if (/^\s*null\s*$/.test(rec))
+      record[x] = null
+    else if (/^\s*(vrai|true)\s*$/i.test(rec))
+      record[x] = true
+    else if (/^\s*(false|faux)\s*$/i.test(rec))
+      record[x] = false
+  }
+
+  record = flat.unflatten(record)
+  // console.log(record)
+  callback(null, record)
+})
+
+input.pipe(parser).pipe(transformer).pipe(writer).pipe(process.stdout)

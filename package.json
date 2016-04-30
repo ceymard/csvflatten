@@ -1,0 +1,14 @@
+{
+  "name": "csvflatten",
+  "version": "0.0.1",
+  "repository": "https://github.com/ceymard/csvflatten",
+  "description": "Flatten csv files with json columns and inversely.",
+  "license": "MIT",
+  "bin": {
+    "csvflatten": "./scripts/csvflatten"
+  },
+  "dependencies": {
+    "csv": "^0.4.6",
+    "flat": "^2.0.0"
+  }
+}
